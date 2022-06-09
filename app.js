@@ -9,7 +9,8 @@ const md5 = require("md5");
 // const saltRounds = 10;
 const session = require("express-session");
 const passport = require("passport");
-const passportLocalMongoose = require("passport-local-mongoose"); //! 1.adim
+//! Step 1
+const passportLocalMongoose = require("passport-local-mongoose");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const findOrCreate = require("mongoose-findorcreate");
 
@@ -21,16 +22,16 @@ app.use(express.static("public"));
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
 
-//! 2.adim
+//! Step 2
 app.use(
   session({
-    secret: "Our little secret.",
+    secret: process.env.SECRET,
     resave: false,
     saveUninitialized: false,
   })
 );
 
-//! 3.adim
+//! Step 3
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -43,7 +44,7 @@ const userSchema = new mongoose.Schema({
   secret: String,
 });
 
-//! 4.adim (kullanicilari salt hash ile kaydetmek icin bu plugini ekledik)
+//! Step 4 (this plugin is added to register users with pure hash)
 userSchema.plugin(passportLocalMongoose);
 userSchema.plugin(findOrCreate);
 //encryption
@@ -51,9 +52,9 @@ userSchema.plugin(findOrCreate);
 
 const User = new mongoose.model("User", userSchema);
 
-//! 5.adim
-//* serialize islemi; kullanici bilgilerini cerezlere dahil etmektir
-//* deserialize islemi ise; cerezdeki bilgileri parcalamak, kontrol etmek icin kullanilir
+//! Step 5
+//* serialize operation; to include user information in cookies
+//* deserialize process; It is used to shred and control the information in the cookie.
 
 passport.use(User.createStrategy());
 
@@ -97,7 +98,7 @@ app.get(
   "/auth/google/secrets",
   passport.authenticate("google", { failureRedirect: "/login" }),
   function (req, res) {
-    // Successful authentication, redirect home.
+    // Successful auth, redirect home.
     res.redirect("/secrets");
   }
 );
@@ -175,7 +176,7 @@ app.post("/register", function (req, res) {
   );
 
   /**const newUser = new User({
-        **md5 ile password sifrelemek
+        **encrypting password with md5
         
         email: req.body.username,
         password: md5(req.body.password)
@@ -190,7 +191,7 @@ app.post("/register", function (req, res) {
     })*/
 
   /** 
-     * *Bcrypt ile sifreleme islemi
+     * *encryption with bcrypt
       bcrypt.hash(req.body.password, saltRounds, function(err, hash) {
         
         const newUser = new User({
@@ -228,10 +229,10 @@ app.post("/login", function (req, res) {
   // const username = req.body.username;
   // const password = req.body.password;
   /**
-     * *md5; sadece hash islemi
+     * *md5; only hashing
      const password = md5(req.body.password);
     
-     * *md5 ile login kontrol
+     * *login control with md5
        User.findOne({email: username}, function(err, foundUser) {
         if (err) {
             console.log(err);
@@ -245,8 +246,8 @@ app.post("/login", function (req, res) {
     }); */
 
   /**
-     * *Bcrypt ile Salting ve hashing islemi
-     * *Ve Login kontrolu
+     * *salting and hashing with bcrypt
+     * *Login control
      User.findOne({email: username}, function(err, foundUser) {
         if (err) {
             console.log(err);
