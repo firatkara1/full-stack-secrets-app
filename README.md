@@ -14,5 +14,5 @@ While users can sign up with their own email, they can also sign in with Google 
 ![img]( https://i.ibb.co/V2ggMhs/s3.png)
 ![img]( https://i.ibb.co/9ZKCJd2/s4.png)
 
-
+ 
 
